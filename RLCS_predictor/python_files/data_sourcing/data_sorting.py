@@ -6,6 +6,7 @@ import pandas as pd
 # Season: 22-23 (as of now)
 # Region: NA, EU (as of now)
 reg_list = ['reg1', 'reg2', 'reg3']
+split_list = ['winter', 'fall',] #spring major 22-23 hasn't happened yet
 
 def get_event_df(split, event, season, region=None):
     if region:
@@ -35,4 +36,23 @@ def get_event_df(split, event, season, region=None):
 
 def get_split_regionals_df(split, season, region):
     reg_dfs = [get_event_df(split, reg, season, region) for reg in reg_list]
-    return reg_dfs
+    regional_split_df = pd.concat(reg_dfs)
+    return regional_split_df
+
+def get_split_with_major(split, season, regions):
+    major_df = get_event_df(split, 'major', season)
+    if type(regions) == str:
+        split_regionals_df = get_split_regionals_df(split, season, regions)
+        split_with_major_dfs = [split_regionals_df, major_df]
+        split_with_major_df = pd.concat(split_with_major_dfs)
+        return split_with_major_df
+    else:
+        split_regionals_dfs = [get_split_regionals_df(split, season, region) for region in regions]
+        split_regionals_dfs.append(major_df)
+        splits_with_major_df = pd.concat(split_regionals_dfs)
+        return splits_with_major_df
+
+def get_majors(season):
+    major_dfs_list = [get_event_df(split, 'major', season) for split in split_list]
+    majors_df = pd.concat(major_dfs_list)
+    return majors_df
