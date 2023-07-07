@@ -13,8 +13,8 @@ def get_event_df(split, event, season, region=None):
         event_df = pd.read_csv(f'../ballchasing_csvs/{str(split)}_{str(event)}_{str(region)}_{str(season)}.csv', sep=';',header=0)
     else:
         event_df = pd.read_csv(f'../ballchasing_csvs/{str(split)}_{str(event)}_{str(season)}.csv', sep=';',header=0)
-    #remove
-    event_df = event_df.drop(columns=['replay id', 'date', 'opposing team name', 'amount collected big pads',
+    #remove unnecessary/redundant columns
+    event_df = event_df.drop(columns=['replay id', 'opposing team name', 'amount collected big pads',
        'amount collected small pads',
        'count collected small pads', 'amount stolen', 'amount stolen big pads',
        'amount stolen small pads', 'count stolen big pads',
@@ -23,15 +23,18 @@ def get_event_df(split, event, season, region=None):
        'amount overfill stolen', 'time slow speed',
        'time boost speed', 'time in front of ball.1', 'time defensive half', 'time offensive half',
        ])
+    # convert date column to datetime and sort values by date
+    event_df['date'] = pd.to_datetime(event_df['date'], yearfirst=True, format="%Y-%m-%d %H:%M:%S")
+    event_df.sort_values(by='date', inplace=True)
     #Split, label and merge rows 2 by 2 for each match
     event_df_1 = event_df.iloc[0::2,:]
     event_df_2 = event_df.iloc[1::2,:]
-    event_df_2 = event_df_2.drop(columns=['map', 'result'])
+    event_df_2 = event_df_2.drop(columns=['map', 'result', 'replay title'])
     event_df_2 = event_df_2.add_suffix('_2')
     event_df_1 = event_df_1.add_suffix('_1')
-    event_df_1.rename(columns={'replay title_1': 'replay title', 'map_1': 'map'}, inplace=True)
-    event_df_2.rename(columns={'replay title_2': 'replay title'}, inplace=True)
-    event_df_merged = event_df_1.merge(event_df_2, 'outer', 'replay title')
+    event_df_1.rename(columns={'replay title_1': 'replay title', 'map_1': 'map', 'date_1':'date'}, inplace=True)
+    event_df_2.rename(columns={'date_2': 'date'}, inplace=True)
+    event_df_merged = event_df_1.merge(event_df_2, 'outer', 'date')
     return event_df_merged
 
 def get_split_regionals_df(split, season, region):
