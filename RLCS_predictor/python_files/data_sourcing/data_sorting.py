@@ -35,6 +35,8 @@ def get_event_df(split, event, season, region=None):
     event_df_1.rename(columns={'replay title_1': 'replay title', 'map_1': 'map', 'date_1':'date'}, inplace=True)
     event_df_2.rename(columns={'date_2': 'date'}, inplace=True)
     event_df_merged = event_df_1.merge(event_df_2, 'outer', 'date')
+    # convert result one from win / loss to 0 / 1
+    event_df_merged['result_1'] = event_df_merged['result_1'].map({'win': 1, 'loss': 0})
     return event_df_merged
 
 def get_split_regionals_df(split, season, region):
